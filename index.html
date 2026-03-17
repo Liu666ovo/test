@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>高级感转盘</title>
 
 <style>
@@ -13,6 +13,16 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* 固定页面不滚动，解决iOS跳动 */
+html, body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: none;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: radial-gradient(circle at top, #1c203b 0%, #0b0d17 100%);
@@ -21,7 +31,6 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow-x: hidden;
 }
 
 .container {
@@ -47,7 +56,6 @@ body {
     width: 320px;
     height: 320px;
     margin: 0 auto 40px;
-    /* 增加一点透视感 */
     perspective: 1000px; 
 }
 
@@ -78,7 +86,7 @@ body {
     box-shadow:
         0 20px 50px rgba(0,0,0,0.8),
         inset 0 0 40px rgba(0,0,0,0.9);
-    transition: transform 5.5s cubic-bezier(0.15, 0.9, 0.3, 1); /* 调整贝塞尔曲线更顺滑 */
+    transition: transform 5.5s cubic-bezier(0.15, 0.9, 0.3, 1);
     z-index: 2;
 }
 
@@ -113,7 +121,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* 移除原有的复杂背景，改用纯色加边框 */
     background: transparent; 
     border-right: 1px solid rgba(0,0,0,0.2);
     border-bottom: 1px solid rgba(0,0,0,0.2);
@@ -150,7 +157,7 @@ body {
 /* 指针优化 - 增加悬停微动 */
 .pointer {
     position: absolute;
-    top: -40px; /* 稍微拉长一点 */
+    top: -40px;
     left: 50%;
     transform: translateX(-50%);
     width: 50px;
@@ -165,7 +172,6 @@ body {
     height: 100%;
     background: linear-gradient(to bottom, #ffffff 0%, #ff6b6b 40%, #8b0000 100%);
     clip-path: polygon(50% 0%, 35% 60%, 40% 100%, 60% 100%, 65% 60%);
-    /* 更尖锐的箭头形状 */
 }
 
 .pointer-dot {
@@ -196,6 +202,8 @@ body {
     box-shadow: 0 10px 30px rgba(212,175,55,0.4), inset 0 2px 5px rgba(255,255,255,0.4);
     transition: all 0.3s ease;
     text-transform: uppercase;
+    /* 修复iOS点击放大 */
+    touch-action: manipulation;
 }
 
 .spin-btn:hover {
@@ -236,7 +244,7 @@ body {
     letter-spacing: 2px;
 }
 
-/* 隐藏网站链接展示区域 */
+/* 隐藏网站链接 */
 .result-link {
     display: none;
 }
@@ -253,6 +261,7 @@ body {
     cursor: pointer;
     box-shadow: 0 5px 20px rgba(78, 205, 196, 0.4);
     transition: transform 0.2s;
+    touch-action: manipulation;
 }
 
 .jump-btn:hover {
@@ -296,7 +305,6 @@ body {
         </div>
 
         <div class="wheel" id="wheel">
-            <!-- JS将在这里注入扇形 -->
         </div>
         
         <div class="wheel-center">🎯</div>
@@ -317,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const spinBtn = document.getElementById('spin-btn');
     const resultPanel = document.getElementById('result-panel');
     const resultContent = document.getElementById('result-content');
-    const jumpBtn = document.getElementById('jump-btn'); // 移除了resultLink的引用
+    const jumpBtn = document.getElementById('jump-btn');
 
     const websiteLinks = [
         'https://v.douyin.com/IBXrMqLzr3w/',
@@ -328,52 +336,43 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://v.douyin.com/3uaN89xmtsk/'
     ];
 
-    // 抽奖结果名称（仅用于结果展示）
-    const names = ['神秘歌曲一', '神秘歌曲二', '神秘歌曲三', '神秘歌曲四', '神秘歌曲五', '神秘歌曲六'];
+    const names = ['神秘曲一', '神秘曲二', '神秘曲三', '神秘曲四', '神秘曲五', '神秘曲六'];
     
-    // 扇形对应的颜色
     const colors = ['#ff6b6b', '#4ecdc4', '#f6c453', '#c39bd3', '#48c9b0', '#ff8e53'];
 
     let rotation = 0;
     let spinning = false;
     let currentLink = '';
 
-    // 初始化扇形（仅创建扇形，无文字）
     const segmentAngle = 360 / 6;
     
     for (let i = 0; i < 6; i++) {
         const seg = document.createElement('div');
         seg.className = 'segment';
         
-        // 计算旋转角度
         const rotateDeg = i * segmentAngle;
         
-        // 设置扇形背景色
         seg.style.backgroundColor = colors[i];
         seg.style.transform = `rotate(${rotateDeg}deg) skewY(-${90 - segmentAngle}deg)`;
         
-        // 直接添加扇形到转盘（无文字）
         wheel.appendChild(seg);
     }
 
-    spinBtn.onclick = () => {
+    spinBtn.onclick = (e) => {
+        e.preventDefault();
         if (spinning) return;
         spinning = true;
-        spinBtn.disabled = true; // 禁用按钮
+        spinBtn.disabled = true;
         resultPanel.classList.remove('show');
         
-        // 添加扫光类
         wheel.classList.add('spinning');
 
         const index = Math.floor(Math.random() * 6);
-        // 增加随机圈数，确保旋转足够多
         const extraRounds = 5 + Math.floor(Math.random() * 3); 
         
         const segmentAngle = 360 / 6;
-        // 为了让指针指在扇形中间，需要额外偏移半个扇形角度
         const targetRotation = rotation + (360 * extraRounds) + (360 - (index * segmentAngle)) - (segmentAngle/2);
         
-        // 记录当前的总旋转度数，保证下次接着转
         rotation = targetRotation; 
         
         wheel.style.transform = `rotate(${rotation}deg)`;
@@ -385,12 +384,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             resultContent.textContent = names[index];
             currentLink = websiteLinks[index];
-            // 移除设置链接文本的代码
             resultPanel.classList.add('show');
         }, 5500);
     };
 
-    jumpBtn.onclick = () => {
+    jumpBtn.onclick = (e) => {
+        e.preventDefault();
         if (currentLink) window.open(currentLink);
     };
 });
