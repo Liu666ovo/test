@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>高级感转盘</title>
+<title>潮玩抽奖卡</title>
 
 <style>
 * {
@@ -13,212 +13,121 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+/* iOS 核心修复：禁止系统默认滚动回弹 */
+html {
     position: fixed;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    touch-action: manipulation;
 }
 
 body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: radial-gradient(circle at top, #1c203b 0%, #0b0d17 100%);
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .container {
-    max-width: 500px;
+    max-width: 450px;
     width: 100%;
     text-align: center;
-    padding: 20px;
 }
 
 .title {
     font-size: 2.2rem;
     font-weight: 800;
     letter-spacing: 4px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     color: #d4af37;
     text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
 }
 
-/* ================= 转盘区域 ================= */
-
-.wheel-container {
-    position: relative;
-    width: 320px;
-    height: 320px;
-    margin: 0 auto 40px;
-    perspective: 1000px; 
-}
-
-/* 外圈慢旋转装饰 - 优化渐变光泽 */
-.wheel-frame {
-    position: absolute;
-    inset: -18px;
-    border-radius: 50%;
-    border: 3px solid transparent;
-    background:
-        linear-gradient(#0b0d17, #0b0d17) padding-box,
-        linear-gradient(135deg, #d4af37, #f6e27a, #8e44ad, #2c3e50, #d4af37) border-box;
-    background-size: 200% 200%;
-    animation: rotateFrame 20s linear infinite, gradientShift 5s ease infinite;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-    z-index: 1;
-}
-
-/* 转盘主体 */
-.wheel {
+/* 抽奖卡片核心样式 */
+.lucky-card {
     width: 100%;
-    height: 100%;
-    border-radius: 50%;
+    height: 380px;
     position: relative;
+    border-radius: 20px;
     overflow: hidden;
     background: #15172b;
-    border: 6px solid rgba(255,255,255,0.1);
-    box-shadow:
-        0 20px 50px rgba(0,0,0,0.8),
-        inset 0 0 40px rgba(0,0,0,0.9);
-    transition: transform 5.5s cubic-bezier(0.15, 0.9, 0.3, 1);
-    z-index: 2;
+    border: 4px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 
+        0 20px 60px rgba(0,0,0,0.8),
+        inset 0 0 30px rgba(0,0,0,0.9);
+    margin-bottom: 40px;
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-/* 新增：旋转时的扫光效果 */
-.wheel::after {
+/* 卡片渐变边框 */
+.lucky-card::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
-    transform: rotate(0deg);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.wheel.spinning::after {
-    opacity: 1;
-    animation: shineScan 1s linear infinite;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(135deg, #d4af37, #f6e27a, #8e44ad, #2c3e50, #d4af37);
+    background-size: 200% 200%;
+    border-radius: 20px;
+    z-index: -1;
+    animation: gradientShift 5s ease infinite;
 }
 
-/* 扇形优化 */
-.segment {
-    position: absolute;
-    width: 50%;
-    height: 50%;
-    transform-origin: bottom right;
-    left: 0;
-    top: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent; 
-    border-right: 1px solid rgba(0,0,0,0.2);
-    border-bottom: 1px solid rgba(0,0,0,0.2);
-}
-
-/* 中心圆 - 升级为金属按钮质感 */
-.wheel-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
-    border: 4px solid #fff;
-    box-shadow:
-        0 0 30px rgba(255,215,0,0.6),
-        inset 0 0 15px rgba(0,0,0,0.4),
-        0 10px 20px rgba(0,0,0,0.5);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.wheel-center:active {
-    transform: translate(-50%, -50%) scale(0.95);
-}
-
-/* 指针优化 - 增加悬停微动 */
-.pointer {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 65px;
-    z-index: 20;
-    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
-    animation: hoverTick 2s ease-in-out infinite;
-}
-
-.pointer-main {
+/* 卡片内容区 */
+.card-content {
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, #ffffff 0%, #ff6b6b 40%, #8b0000 100%);
-    clip-path: polygon(50% 0%, 35% 60%, 40% 100%, 60% 100%, 65% 60%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
 }
 
-.pointer-dot {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #fff, #ccc);
-    box-shadow: 0 0 10px rgba(255,255,255,0.6);
-    border: 2px solid #8b0000;
+.card-icon {
+    font-size: 6rem;
+    margin-bottom: 20px;
+    transition: transform 0.5s ease;
 }
 
-/* ================= 按钮 & 结果 ================= */
-
-.spin-btn {
-    background: linear-gradient(145deg, #d4af37, #b8860b);
-    color: #111;
-    border: none;
-    padding: 16px 60px;
-    font-size: 1.2rem;
-    font-weight: 800;
+.card-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
     letter-spacing: 2px;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(212,175,55,0.4), inset 0 2px 5px rgba(255,255,255,0.4);
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    touch-action: manipulation;
+    transition: all 0.5s ease;
 }
 
-.spin-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(212,175,55,0.6);
+/* 卡片点击动效 */
+.lucky-card.clicked {
+    transform: scale(0.98);
+    box-shadow: 
+        0 15px 40px rgba(0,0,0,0.9),
+        inset 0 0 40px rgba(0,0,0,0.9);
 }
 
-.spin-btn:active {
-    transform: translateY(1px);
+.lucky-card.clicked .card-icon {
+    transform: rotate(15deg) scale(1.1);
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8));
 }
 
-.spin-btn:disabled {
-    filter: grayscale(0.8);
-    cursor: not-allowed;
-    transform: none;
-}
-
+/* 结果面板 */
 .result-panel {
-    margin-top: 30px;
+    margin-top: 20px;
     display: none;
     opacity: 0;
     transform: translateY(20px);
@@ -235,94 +144,91 @@ body {
     font-size: 2.2rem;
     font-weight: 800;
     color: #ffd700;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     letter-spacing: 2px;
 }
 
-/* 隐藏网站链接 */
+/* 隐藏链接 */
 .result-link {
     display: none;
 }
 
+/* 按钮样式 */
 .jump-btn {
-    margin-top: 10px;
-    padding: 12px 45px;
-    border-radius: 40px;
+    padding: 14px 50px;
+    border-radius: 50px;
     border: none;
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-    color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
+    background: linear-gradient(135deg, #d4af37, #b8860b);
+    color: #111;
+    font-weight: 800;
+    font-size: 1.1rem;
     cursor: pointer;
-    box-shadow: 0 5px 20px rgba(78, 205, 196, 0.4);
-    transition: transform 0.2s;
-    touch-action: manipulation;
+    box-shadow: 0 10px 30px rgba(212,175,55,0.4), inset 0 2px 5px rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .jump-btn:hover {
-    transform: scale(1.05);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(212,175,55,0.6);
 }
 
-/* ================= 动画定义 ================= */
-
-@keyframes rotateFrame {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+.jump-btn:active {
+    transform: translateY(1px);
 }
 
+/* 动画定义 */
 @keyframes gradientShift {
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
 }
 
-@keyframes hoverTick {
-    0%, 100% { transform: translateX(-50%) rotate(-2deg); }
-    50% { transform: translateX(-50%) rotate(2deg); }
+/* 加载动画 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
-@keyframes shineScan {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.loading {
+    animation: pulse 1.5s ease infinite;
 }
 </style>
 </head>
 
 <body>
 <div class="container">
-    <h1 class="title">LUCKY SPIN</h1>
+    <h1 class="title">LUCKY DRAW</h1>
 
-    <div class="wheel-container">
-        <div class="wheel-frame"></div>
-
-        <div class="pointer">
-            <div class="pointer-main"></div>
-            <div class="pointer-dot"></div>
+    <!-- 抽奖卡片 -->
+    <div class="lucky-card" id="luckyCard">
+        <div class="card-content">
+            <div class="card-icon" id="cardIcon">🎵</div>
+            <div class="card-text" id="cardText">点击抽街头好歌</div>
         </div>
-
-        <div class="wheel" id="wheel">
-        </div>
-        
-        <div class="wheel-center">🎯</div>
     </div>
 
-    <button class="spin-btn" id="spin-btn">开始旋转</button>
-
-    <div class="result-panel" id="result-panel">
-        <div class="result-content" id="result-content">...</div>
-        <div class="result-link" id="result-link"></div>
-        <button class="jump-btn" id="jump-btn">立即播放</button>
+    <!-- 结果面板 -->
+    <div class="result-panel" id="resultPanel">
+        <div class="result-content" id="resultContent">...</div>
+        <div class="result-link" id="resultLink"></div>
+        <button class="jump-btn" id="jumpBtn">立即播放</button>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const wheel = document.getElementById('wheel');
-    const spinBtn = document.getElementById('spin-btn');
-    const resultPanel = document.getElementById('result-panel');
-    const resultContent = document.getElementById('result-content');
-    const jumpBtn = document.getElementById('jump-btn');
+    const luckyCard = document.getElementById('luckyCard');
+    const cardIcon = document.getElementById('cardIcon');
+    const cardText = document.getElementById('cardText');
+    const resultPanel = document.getElementById('resultPanel');
+    const resultContent = document.getElementById('resultContent');
+    const jumpBtn = document.getElementById('jumpBtn');
 
+    // 街头视频链接列表
     const websiteLinks = [
         'https://v.douyin.com/r63-zGkAGMY/',
         'https://v.douyin.com/DOWCAd3r5o8/',
@@ -332,62 +238,69 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://v.douyin.com/r63-zGkAGMY/'
     ];
 
+    // 奖品/歌曲名称
     const names = ['神秘歌曲一', '神秘歌曲二', '神秘歌曲三', '神秘歌曲四', '神秘歌曲五', '神秘歌曲六'];
     
-    const colors = ['#ff6b6b', '#4ecdc4', '#f6c453', '#c39bd3', '#48c9b0', '#ff8e53'];
-
-    let rotation = 0;
-    let spinning = false;
-    let currentLink = '';
-
-    const segmentAngle = 360 / 6;
+    // 卡片图标集合
+    const icons = ['🎵', '🎶', '🔥', '🎧', '💥', '✨'];
     
-    for (let i = 0; i < 6; i++) {
-        const seg = document.createElement('div');
-        seg.className = 'segment';
-        
-        const rotateDeg = i * segmentAngle;
-        
-        seg.style.backgroundColor = colors[i];
-        seg.style.transform = `rotate(${rotateDeg}deg) skewY(-${90 - segmentAngle}deg)`;
-        
-        wheel.appendChild(seg);
-    }
+    let currentLink = '';
+    let isDrawing = false;
 
-    spinBtn.onclick = (e) => {
+    // iOS 点击优先使用 touch 事件，解决延迟
+    luckyCard.addEventListener('touchend', (e) => {
         e.preventDefault();
-        if (spinning) return;
-        spinning = true;
-        spinBtn.disabled = true;
+        startDraw();
+    });
+
+    luckyCard.addEventListener('click', startDraw);
+
+    function startDraw() {
+        if (isDrawing) return;
+        isDrawing = true;
+        
+        // 重置结果面板
         resultPanel.classList.remove('show');
         
-        wheel.classList.add('spinning');
+        // 点击动效
+        luckyCard.classList.add('clicked');
+        cardText.textContent = '正在抽取...';
+        cardText.classList.add('loading');
+        
+        // 随机切换图标（模拟抽奖动画）
+        let iconIndex = 0;
+        const iconInterval = setInterval(() => {
+            cardIcon.textContent = icons[iconIndex % icons.length];
+            iconIndex++;
+        }, 100);
 
-        const index = Math.floor(Math.random() * 6);
-        const extraRounds = 5 + Math.floor(Math.random() * 3); 
-        
-        const segmentAngle = 360 / 6;
-        const targetRotation = rotation + (360 * extraRounds) + (360 - (index * segmentAngle)) - (segmentAngle/2);
-        
-        rotation = targetRotation; 
-        
-        wheel.style.transform = `rotate(${rotation}deg)`;
-
+        // 抽奖延迟（模拟加载）
         setTimeout(() => {
-            spinning = false;
-            spinBtn.disabled = false;
-            wheel.classList.remove('spinning');
+            clearInterval(iconInterval);
+            luckyCard.classList.remove('clicked');
+            cardText.classList.remove('loading');
             
-            resultContent.textContent = names[index];
-            currentLink = websiteLinks[index];
+            // 随机选结果
+            const randomIndex = Math.floor(Math.random() * 6);
+            currentLink = websiteLinks[randomIndex];
+            
+            // 更新卡片和结果
+            cardIcon.textContent = icons[randomIndex];
+            cardText.textContent = '点击再抽一次';
+            resultContent.textContent = names[randomIndex];
             resultPanel.classList.add('show');
-        }, 5500);
-    };
+            
+            isDrawing = false;
+        }, 1800);
+    }
 
-    jumpBtn.onclick = (e) => {
+    // 跳转按钮逻辑
+    jumpBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (currentLink) window.open(currentLink);
-    };
+        if (currentLink) {
+            window.open(currentLink, '_blank');
+        }
+    });
 });
 </script>
 </body>
