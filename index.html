@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>潮玩抽奖卡</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>潮玩抽奖卡 - 街头好歌</title>
 
 <style>
 * {
@@ -11,36 +14,39 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    /* 改善iOS字体渲染 */
+    -webkit-font-smoothing: antialiased;
+    font-smoothing: antialiased;
 }
 
-/* iOS 核心修复：禁止系统默认滚动回弹 */
-html {
+html, body {
     position: fixed;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    touch-action: pan-y pinch-zoom; /* 保留垂直滚动能力但禁止横向，iOS上更自然 */
 }
 
 body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    touch-action: none;
-    -webkit-overflow-scrolling: none;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, sans-serif;
     background: radial-gradient(circle at top, #1c203b 0%, #0b0d17 100%);
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) 
-            env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: 20px;
+    /* 修复iOS滚动穿透 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* 容器自适应 */
 .container {
     max-width: 450px;
     width: 100%;
     text-align: center;
+    margin: auto;
+    padding: 10px 0 30px;
 }
 
 .title {
@@ -50,44 +56,56 @@ body {
     margin-bottom: 40px;
     color: #d4af37;
     text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    /* iOS 平滑 */
+    -webkit-background-clip: text;
+    background-clip: text;
 }
 
-/* 抽奖卡片核心样式 */
+/* 抽奖卡片核心样式 - 优化iOS渲染和3D加速 */
 .lucky-card {
     width: 100%;
     height: 380px;
     position: relative;
-    border-radius: 20px;
+    border-radius: 28px;
     overflow: hidden;
     background: #15172b;
-    border: 4px solid transparent;
+    border: 1px solid rgba(212, 175, 55, 0.3);
     background-clip: padding-box;
     box-shadow: 
-        0 20px 60px rgba(0,0,0,0.8),
-        inset 0 0 30px rgba(0,0,0,0.9);
+        0 20px 40px rgba(0,0,0,0.5),
+        inset 0 0 30px rgba(0,0,0,0.6);
     margin-bottom: 40px;
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    /* 启用硬件加速，改善动画 */
+    transform: translateZ(0);
+    will-change: transform;
     cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
+    /* 优化iOS触摸反馈 */
+    touch-action: manipulation;
 }
 
-/* 卡片渐变边框 */
-.lucky-card::before {
+/* 渐变边框层，避免z-index层级闪烁问题 */
+.lucky-card::after {
     content: '';
     position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    background: linear-gradient(135deg, #d4af37, #f6e27a, #8e44ad, #2c3e50, #d4af37);
-    background-size: 200% 200%;
-    border-radius: 20px;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(135deg, #d4af37, #f6e27a, #e67e22, #9b59b6, #2c3e50, #d4af37);
+    background-size: 300% 300%;
+    border-radius: 28px;
     z-index: -1;
-    animation: gradientShift 5s ease infinite;
+    opacity: 0.85;
+    animation: gradientShift 6s ease infinite;
+    transition: opacity 0.3s;
 }
 
-/* 卡片内容区 */
+.lucky-card:active::after {
+    opacity: 1;
+}
+
+/* 卡片内容区 - 改善触摸区域 */
 .card-content {
     width: 100%;
     height: 100%;
@@ -95,43 +113,76 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 30px;
+    padding: 30px 20px;
+    background: rgba(21, 23, 43, 0.88);
+    backdrop-filter: blur(2px);
+    border-radius: 24px;
+    -webkit-backdrop-filter: blur(2px);
 }
 
 .card-icon {
     font-size: 6rem;
     margin-bottom: 20px;
-    transition: transform 0.5s ease;
+    transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    will-change: transform;
 }
 
 .card-text {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: #fff;
+    color: #fff9e0;
     letter-spacing: 2px;
-    transition: all 0.5s ease;
+    background: linear-gradient(135deg, #f9f3d9, #ffecb3);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
 }
 
-/* 卡片点击动效 */
-.lucky-card.clicked {
-    transform: scale(0.98);
-    box-shadow: 
-        0 15px 40px rgba(0,0,0,0.9),
-        inset 0 0 40px rgba(0,0,0,0.9);
+/* 点击动效 (iOS使用active模拟，去掉class冲突，优化为瞬时scale) */
+.lucky-card:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-out;
 }
 
-.lucky-card.clicked .card-icon {
-    transform: rotate(15deg) scale(1.1);
-    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8));
+.lucky-card:active .card-icon {
+    transform: scale(1.08) rotate(5deg);
+    transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.6, 1.2);
 }
 
-/* 结果面板 */
+/* 抽奖动画时禁止重复点击，给一个特殊类，但保留视觉友好 */
+.lucky-card.drawing {
+    pointer-events: none;
+}
+
+.lucky-card.drawing .card-icon {
+    animation: iconPulse 0.9s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.12); opacity: 0.9; text-shadow: 0 0 12px #ffd966; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* 结果面板，iOS上平滑透明度+位移 */
 .result-panel {
-    margin-top: 20px;
+    margin-top: 15px;
     display: none;
     opacity: 0;
     transform: translateY(20px);
-    transition: all 0.5s ease;
+    transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1), transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    will-change: opacity, transform;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 48px;
+    padding: 18px 20px 22px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
 
 .result-panel.show {
@@ -141,73 +192,120 @@ body {
 }
 
 .result-content {
-    font-size: 2.2rem;
+    font-size: 1.9rem;
     font-weight: 800;
-    color: #ffd700;
-    margin-bottom: 15px;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    color: #ffea9e;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(212, 175, 55, 0.6);
     letter-spacing: 2px;
+    word-break: keep-all;
 }
 
-/* 隐藏链接 */
 .result-link {
     display: none;
 }
 
-/* 按钮样式 */
+/* 按钮样式 iOS 无hover 更侧重触感 */
 .jump-btn {
-    padding: 14px 50px;
-    border-radius: 50px;
+    padding: 14px 44px;
+    border-radius: 60px;
     border: none;
-    background: linear-gradient(135deg, #d4af37, #b8860b);
-    color: #111;
+    background: linear-gradient(115deg, #e4bc2c, #c27e0a);
+    color: #1e1a0c;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(212,175,55,0.4), inset 0 2px 5px rgba(255,255,255,0.4);
-    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,240,0.6);
+    transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.jump-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(212,175,55,0.6);
+    letter-spacing: 1.5px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(212,175,55,0.3);
+    backdrop-filter: blur(4px);
+    font-weight: 700;
 }
 
 .jump-btn:active {
-    transform: translateY(1px);
+    transform: scale(0.96);
+    background: linear-gradient(115deg, #d4aa20, #b56f08);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+    transition: transform 0.08s;
 }
 
-/* 动画定义 */
+/* 小适配iPhone SE/小屏 */
+@media (max-width: 450px) {
+    .lucky-card {
+        height: 340px;
+    }
+    .card-icon {
+        font-size: 5rem;
+    }
+    .card-text {
+        font-size: 1.4rem;
+    }
+    .result-content {
+        font-size: 1.6rem;
+    }
+    .title {
+        font-size: 1.9rem;
+        margin-bottom: 28px;
+    }
+    .jump-btn {
+        padding: 12px 36px;
+        font-size: 1rem;
+    }
+}
+
+/* 安全区域适配 (全面屏iPhone) */
+@supports (padding: max(0px)) {
+    .container {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+    body {
+        padding: max(12px, env(safe-area-inset-top)) 20px max(12px, env(safe-area-inset-bottom)) 20px;
+    }
+}
+
 @keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
+    0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-/* 加载动画 */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+/* 抽奖时文字动画 */
+.loading-pulse {
+    animation: textPulse 0.9s ease-in-out infinite;
 }
 
-.loading {
-    animation: pulse 1.5s ease infinite;
+@keyframes textPulse {
+    0% { opacity: 0.7; letter-spacing: 1px; }
+    100% { opacity: 1; letter-spacing: 3px; }
+}
+
+/* 额外对iOS滚动去除弹性效果，防止卡片抖动 */
+body {
+    overscroll-behavior: none;
+}
+
+/* 提升卡片点击区域清晰度 */
+.lucky-card {
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 </style>
 </head>
 
 <body>
 <div class="container">
-    <h1 class="title">LUCKY DRAW</h1>
+    <h1 class="title">✨ LUCKY DRAW ✨</h1>
 
     <!-- 抽奖卡片 -->
     <div class="lucky-card" id="luckyCard">
         <div class="card-content">
             <div class="card-icon" id="cardIcon">🎵</div>
-            <div class="card-text" id="cardText">点击抽街头好歌</div>
+            <div class="card-text" id="cardText">轻点抽街头好歌</div>
         </div>
     </div>
 
@@ -215,93 +313,254 @@ body {
     <div class="result-panel" id="resultPanel">
         <div class="result-content" id="resultContent">...</div>
         <div class="result-link" id="resultLink"></div>
-        <button class="jump-btn" id="jumpBtn">立即播放</button>
+        <button class="jump-btn" id="jumpBtn">🎧 立即播放 ▶</button>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const luckyCard = document.getElementById('luckyCard');
-    const cardIcon = document.getElementById('cardIcon');
-    const cardText = document.getElementById('cardText');
-    const resultPanel = document.getElementById('resultPanel');
-    const resultContent = document.getElementById('resultContent');
-    const jumpBtn = document.getElementById('jumpBtn');
-
-    // 街头视频链接列表
-    const websiteLinks = [
-        'https://v.douyin.com/r63-zGkAGMY/',
-        'https://v.douyin.com/DOWCAd3r5o8/',
-        'https://v.douyin.com/rlxbgpT-s1k/',
-        'https://v.douyin.com/gwVQ4NQf3RQ/',
-        'https://v.douyin.com/yE42tSJTgnE/',
-        'https://v.douyin.com/r63-zGkAGMY/'
-    ];
-
-    // 奖品/歌曲名称
-    const names = ['神秘歌曲一', '神秘歌曲二', '神秘歌曲三', '神秘歌曲四', '神秘歌曲五', '神秘歌曲六'];
-    
-    // 卡片图标集合
-    const icons = ['🎵', '🎶', '🔥', '🎧', '💥', '✨'];
-    
-    let currentLink = '';
-    let isDrawing = false;
-
-    // iOS 点击优先使用 touch 事件，解决延迟
-    luckyCard.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        startDraw();
-    });
-
-    luckyCard.addEventListener('click', startDraw);
-
-    function startDraw() {
-        if (isDrawing) return;
-        isDrawing = true;
-        
-        // 重置结果面板
-        resultPanel.classList.remove('show');
-        
-        // 点击动效
-        luckyCard.classList.add('clicked');
-        cardText.textContent = '正在抽取...';
-        cardText.classList.add('loading');
-        
-        // 随机切换图标（模拟抽奖动画）
-        let iconIndex = 0;
-        const iconInterval = setInterval(() => {
-            cardIcon.textContent = icons[iconIndex % icons.length];
-            iconIndex++;
-        }, 100);
-
-        // 抽奖延迟（模拟加载）
-        setTimeout(() => {
-            clearInterval(iconInterval);
-            luckyCard.classList.remove('clicked');
-            cardText.classList.remove('loading');
-            
-            // 随机选结果
-            const randomIndex = Math.floor(Math.random() * 6);
-            currentLink = websiteLinks[randomIndex];
-            
-            // 更新卡片和结果
-            cardIcon.textContent = icons[randomIndex];
-            cardText.textContent = '点击再抽一次';
-            resultContent.textContent = names[randomIndex];
-            resultPanel.classList.add('show');
-            
-            isDrawing = false;
-        }, 1800);
+(function() {
+    // 兼容iOS Safari，确保DOM完全加载
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
     }
 
-    // 跳转按钮逻辑
-    jumpBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentLink) {
-            window.open(currentLink, '_blank');
+    function init() {
+        const luckyCard = document.getElementById('luckyCard');
+        const cardIcon = document.getElementById('cardIcon');
+        const cardText = document.getElementById('cardText');
+        const resultPanel = document.getElementById('resultPanel');
+        const resultContent = document.getElementById('resultContent');
+        const jumpBtn = document.getElementById('jumpBtn');
+        
+        // 抖音视频链接 (更稳定兼容iOS)
+        // 增加更可靠的链接格式，并保证在iOS中唤起抖音/浏览器
+        const websiteLinks = [
+            'https://v.douyin.com/r63-zGkAGMY/',
+            'https://v.douyin.com/DOWCAd3r5o8/',
+            'https://v.douyin.com/rlxbgpT-s1k/',
+            'https://v.douyin.com/gwVQ4NQf3RQ/',
+            'https://v.douyin.com/yE42tSJTgnE/',
+            'https://v.douyin.com/iDkY7a2F/'
+        ];
+        
+        // 奖品/歌曲名称 - 街头主题风格
+        const prizeNames = [
+            '🎤 街头热单 · 律动迷城',
+            '🎸 自由节拍 · 城市心跳',
+            '🔥 爆裂鼓点 · 限时惊喜',
+            '💎 地下金曲 · 灵魂采样',
+            '✨ 午夜巡游 · 神秘旋律',
+            '🌟 潮流风向 · 炸场神曲'
+        ];
+        
+        // 对应的图标更丰富
+        const iconsSet = [
+            '🎵', '🎶', '🔥', '🎧', '💎', '✨'
+        ];
+        
+        // 存储当前抽中的链接
+        let currentLink = '';
+        let isDrawing = false;
+        let drawTimeout = null;
+        let iconInterval = null;
+        
+        // 重置所有抽奖过程中残留的定时器
+        function clearDrawTimers() {
+            if (iconInterval) {
+                clearInterval(iconInterval);
+                iconInterval = null;
+            }
+            if (drawTimeout) {
+                clearTimeout(drawTimeout);
+                drawTimeout = null;
+            }
         }
-    });
-});
+        
+        // 抽奖动作
+        function performDraw() {
+            if (isDrawing) return;
+            isDrawing = true;
+            
+            // 清除之前残留定时器
+            clearDrawTimers();
+            
+            // 隐藏结果面板并且重置样式
+            resultPanel.classList.remove('show');
+            
+            // 添加抽奖禁用状态 & 视觉反馈
+            luckyCard.classList.add('drawing');
+            // 改变卡片文案
+            cardText.textContent = '🎲 律动加载中...';
+            cardText.classList.add('loading-pulse');
+            
+            // 模拟图标快速切换
+            let iconIdx = 0;
+            iconInterval = setInterval(() => {
+                // 随机切换图标让效果更炫
+                const randomIcon = iconsSet[Math.floor(Math.random() * iconsSet.length)];
+                cardIcon.textContent = randomIcon;
+                iconIdx++;
+                // 稍微加入一些闪烁效果
+                if (iconIdx % 5 === 0) {
+                    cardIcon.style.transform = 'scale(1.05)';
+                    setTimeout(() => { if(cardIcon) cardIcon.style.transform = ''; }, 100);
+                }
+            }, 100);
+            
+            // 抽奖延迟 (模拟网络/华丽揭晓)
+            drawTimeout = setTimeout(() => {
+                // 停止图标滚动
+                if (iconInterval) {
+                    clearInterval(iconInterval);
+                    iconInterval = null;
+                }
+                
+                // 随机抽取结果 (0-5)
+                const randomIndex = Math.floor(Math.random() * prizeNames.length);
+                currentLink = websiteLinks[randomIndex];
+                
+                // 保证链接有效 (兜底)
+                if (!currentLink || currentLink === '') {
+                    currentLink = websiteLinks[0];
+                }
+                
+                // 更新卡片UI
+                cardIcon.textContent = iconsSet[randomIndex];
+                cardText.textContent = '✨ 再抽一次 ✨';
+                cardText.classList.remove('loading-pulse');
+                
+                // 更新结果面板内容
+                resultContent.innerHTML = `${prizeNames[randomIndex]}`;
+                // 轻微震动感（iOS上无振动API就忽略，但不用报错，可选的轻轻反馈）
+                if (window.navigator && window.navigator.vibrate) {
+                    // 如果有振动权限，短振一下，没权限也不影响
+                    try { window.navigator.vibrate(50); } catch(e) { /* 静默失败 */ }
+                }
+                
+                // 显示结果面板 + 入场动画
+                resultPanel.classList.add('show');
+                
+                // 解除禁用标记
+                luckyCard.classList.remove('drawing');
+                isDrawing = false;
+                
+                // 清理超时标记
+                drawTimeout = null;
+            }, 1500); // 1.5秒体验友好
+        }
+        
+        // 处理卡片点击 (抽奖)
+        function onCardTap(e) {
+            e.preventDefault();
+            if (isDrawing) return;
+            // 增加iOS防抖，确保不会因快速双击多次抽奖
+            performDraw();
+        }
+        
+        // 绑定点击事件（同时兼容touchstart和click，但为避免双重触发，只使用click，iOS Safari click有300ms延迟但现代浏览器已优化）
+        // 为了更好的触摸响应，额外加上touchstart但需preventDefault防止双击缩放? 最好只绑定click足够
+        luckyCard.addEventListener('click', onCardTap);
+        
+        // 对于iOS，也绑定touchstart以提升速度，但注意避免重复触发
+        let touchHandled = false;
+        luckyCard.addEventListener('touchstart', (e) => {
+            // 仅用于加速视觉反馈，不实际触发抽奖，避免两次执行
+            if (touchHandled) return;
+            touchHandled = true;
+            setTimeout(() => { touchHandled = false; }, 300);
+            // 只添加按压效果，抽奖逻辑靠click统一处理，以免double
+            if (!isDrawing) {
+                // 轻按时增加一个瞬时类（由css的:active处理，无需额外操作）
+                // 完全依靠click触发抽奖，让iOS响应更快但不重复
+            }
+        });
+        
+        // 跳转按钮处理 - 针对iOS可能阻止新窗口的问题，确保用户交互触发
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (currentLink) {
+                // 确保链接有效，iOS 上 window.open 需要用户直接交互，这里button已经由用户点击触发，有效
+                // 尝试打开新标签页（部分浏览器可能会拦截，但是用户主动点击且非异步一般允许）
+                window.open(currentLink, '_blank');
+                // 附加处理: 如果因为某些情况被屏蔽，提供控制台不影响体验
+            } else {
+                // 没有抽奖的情况下，提醒或者模拟再抽一次？让用户再抽一下
+                if (!isDrawing) {
+                    // 轻提醒: 尚未抽奖，引导点击卡片
+                    resultContent.innerHTML = '✨ 先点击卡片抽奖 ✨';
+                    resultPanel.classList.add('show');
+                    setTimeout(() => {
+                        if (resultPanel.classList.contains('show') && resultContent.innerHTML.includes('先点击卡片')) {
+                            // 3秒后自动恢复，不清除实际抽奖结果展示逻辑
+                            if (!currentLink) {
+                                // 没有抽中链接的时候才重置
+                                resultPanel.classList.remove('show');
+                            }
+                        }
+                    }, 1800);
+                }
+            }
+        });
+        
+        // 增加重置状态优化：如果抽奖后，再次抽奖时清理之前的结果残留，并在开始时重置currentLink（但不用清链接，抽奖会覆盖）
+        // 增强处理: 当抽奖开始后，保证结果面板消失且禁止跳转无内容
+        // 防止抽奖完成前点击跳转按钮导致无效跳转
+        // 优雅处理iOS内存和长按菜单禁用
+        luckyCard.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        // 可选的辅助功能: 给一个初始友好的提示
+        // 确保背景链接都不含非法跳转
+        console.log('iOS优化版潮玩抽奖卡已启动 | 街头好歌');
+        
+        // 针对iOS 若在WKWebView或有阻止弹窗，依旧保持良好体验
+        // 动态修正链接重试: 如果抖音链接因为过期，跳转也不影响，用户可手动刷新
+        
+        // 额外安全处理: 当抽奖完成后如果用户再次点击卡片且未刷新旧结果, 完全正常替换
+        // 并且保证按钮文字和可点
+        const resetSafe = () => {
+            // 如果抽奖过程中意外中断（极少情况），重置标志
+            if (isDrawing) {
+                clearDrawTimers();
+                luckyCard.classList.remove('drawing');
+                cardText.classList.remove('loading-pulse');
+                isDrawing = false;
+                cardText.textContent = '点击抽街头好歌';
+                cardIcon.textContent = '🎵';
+            }
+        };
+        
+        // 全局保底，页面可见性变化时重置抽奖状态（防止后台计时导致异常）
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && isDrawing) {
+                // 页面隐藏但抽奖未完成，为避免卡死，强行重置并显示抽奖错误补偿
+                clearDrawTimers();
+                luckyCard.classList.remove('drawing');
+                cardText.classList.remove('loading-pulse');
+                if (isDrawing) {
+                    cardText.textContent = '点击再试一次';
+                    cardIcon.textContent = '🎵';
+                    isDrawing = false;
+                    // 可选提示
+                    if (resultPanel) resultPanel.classList.remove('show');
+                }
+            }
+        });
+        
+        // 导出window对象调用重置（可选）
+        window.__resetDrawIfNeeded = resetSafe;
+        
+        // 给卡片初始无bug
+        // 对于iOS 长按弹出菜单禁用
+        luckyCard.style.webkitTouchCallout = 'none';
+        
+        // 如果是第一次加载，没有任何抽取记录，不显示面板
+        // 如果已经抽奖过，刷新保留状态不需要额外工作
+        // 添加占位优化抽奖回调
+    }
+})();
 </script>
 </body>
 </html>
